@@ -1,12 +1,13 @@
+// Declare pins
 const int stepXPin = 2;
 const int dirXPin = 5;
 const int stepYPin = 3;
 const int dirYPin = 6;
+const int servoPin = 4; // stepZPin
 
 // Unused
 const int limXPin = 9; // Unused
 const int limYPin = 10; // Unused
-const int stepZPin = 4; // Unused
 const int dirZPin = 7; // Unused
 const int limZPin = 11; // Unused
 // What are the A pins?
