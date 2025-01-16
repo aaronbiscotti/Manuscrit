@@ -18,9 +18,9 @@ Servo writingServo;
 void setup() {
   // Set stepper params
   stepperX.setMaxSpeed(1000.0);
+  stepperX.moveTo(10);
   stepperX.setSpeed(200.0);
   //stepperX.setAcceleration(1000.0);
-  //stepperX.moveTo(1000);
   stepperY.setMaxSpeed(1000.0);
   stepperY.setSpeed(100.0);
   //stepperY.setAcceleration(1000.0);
@@ -32,7 +32,7 @@ void setup() {
 
 void loop() {
   // Run tests
-  stepperX.runSpeed();
+  stepperX.runSpeedToPosition();
   stepperY.runSpeed();
   writingServo.write(180);
 
