@@ -6,9 +6,10 @@
 #define WRITE_MODE 0
 #define TRAVEL_MODE 1
 #define CALIBRATE_MODE 2
-#define STEPPER_MAX_SPEED 1000.0 // 1000.0 if no micro steps
-#define STEPPER_WRITE_SPEED 200.0 // 200.0 if no micro steps
-#define STEPPER_TRAVEL_SPEED 600.0 // 600.0 if no micro steps
+#define STEPS_TO_CM 1.0 // CHANGE THIS TO HAVE steps/sec * STEPS_TO_CM = cm/sec
+#define CM_TO_STEPS 1.0 // CHANGE THIS TO HAVE cm/sec * CM_TO_STEPS = steps/sec
+#define STEPPER_WRITE_MAX_SPEED 200.0 // 200.0 if no micro steps
+#define STEPPER_TRAVEL_MAX_SPEED 600.0 // 600.0 if no micro steps
 #define STEPPER_CALIBRATE_SPEED 100.0 // 100.0 if no micro steps
 #define SERVO_UP 160
 #define SERVO_DOWN 30
@@ -38,14 +39,34 @@ Servo writingServo;
 /****************** FUNCTIONS ******************/
 
 /**
+ * /brief Takes a speed (steps/s) and converts it to cms per second
+ *
+ * /param speed Speed in steps/s
+ * /return The speed in cm/s
+ */
+float toCPS(float speed) {
+  return speed * STEPS_TO_CM;
+}
+
+/**
+ * /brief Takes a speed (cm/s) and converts it to steps per second
+ *
+ * /param speed Speed in cm/s
+ * /return The speed in steps/s
+ */
+float toCPS(float speed) {
+  return speed * CM_TO_STEPS;
+}
+
+/**
  * /brief Puts the writing servo in the writing (down) position and sets the steppers to write speed
  */
 void writeMode() {
   mode = WRITE_MODE;
 
   // Set writing speed
-  stepperX.setSpeed(STEPPER_WRITE_SPEED);
-  stepperY.setSpeed(STEPPER_WRITE_SPEED);
+  stepperX.setMaxSpeed(STEPPER_WRITE_SPEED);
+  stepperY.setMaxSpeed(STEPPER_WRITE_SPEED);
 
   // Put into writing position
   writingServo.write(SERVO_DOWN);
@@ -61,8 +82,8 @@ void travelMode() {
   mode = TRAVEL_MODE;
 
   // Set writing speed
-  stepperX.setSpeed(STEPPER_TRAVEL_SPEED);
-  stepperY.setSpeed(STEPPER_TRAVEL_SPEED);
+  stepperX.setMaxSpeed(STEPPER_TRAVEL_SPEED);
+  stepperY.setMaxSpeed(STEPPER_TRAVEL_SPEED);
 
   // Put into writing position
   writingServo.write(SERVO_UP);
@@ -78,6 +99,8 @@ void calibrate() {
   mode = CALIBRATE_MODE;
 
   // Set calibrate speed
+  stepperX.setMaxSpeed(STEPPER_CALIBRATE_SPEED + 1);
+  stepperY.setMaxSpeed(STEPPER_CALIBRATE_SPEED + 1);
   stepperX.setSpeed(STEPPER_CALIBRATE_SPEED);
   stepperY.setSpeed(STEPPER_CALIBRATE_SPEED);
 
@@ -86,7 +109,7 @@ void calibrate() {
 
   // Get x == 0.0 first
   // While is no connection between for the head and x axis
-  while(false) {
+  while(false) { // TODO: Change this to detect
     stepperX.runSpeed();
   }
   stepperX.stop();
@@ -94,7 +117,7 @@ void calibrate() {
 
   // Get y == 0.0 second
   // While is no connection between the head and y axis
-  while(false) {
+  while(false) { // TODO: Change this to detect
     stepperY.runSpeed();
   }
   stepperY.stop();
@@ -105,18 +128,18 @@ void calibrate() {
 
 /**
  * /brief Goes to the (x, y) coordinates given
+ *
+ * /param x The x coordinate we want to go to, in cm
+ * /param y The y coordinate we want to go to, in cm
  */
 void goTo(float x, float y) {
-
+  unsigned long start = millis();
+  
 }
 
 /****************** RUNTIME ******************/
 
 void setup() {
-  // Set stepper params
-  stepperX.setMaxSpeed(STEPPER_MAX_SPEED);
-  stepperY.setMaxSpeed(STEPPER_MAX_SPEED);
-
   // Set up servo params
   writingServo.attach(servoPin);
 
