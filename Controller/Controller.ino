@@ -1,15 +1,17 @@
 #include <AccelStepper.h>
 #include <Servo.h>
 
+// Note: 200 steps is a full rotation
+
 /****************** VARIABLES ******************/
 // Constants (TO BE TWEAKED WHEN BUILT)
 #define WRITE_MODE 0
 #define TRAVEL_MODE 1
 #define CALIBRATE_MODE 2
-#define STEPS_TO_CM 1.0 // CHANGE THIS TO HAVE steps/sec * STEPS_TO_CM = cm/sec
-#define CM_TO_STEPS 1.0 // CHANGE THIS TO HAVE cm/sec * CM_TO_STEPS = steps/sec
-#define STEPPER_WRITE_MAX_SPEED 200.0 // 200.0 if no micro steps
-#define STEPPER_TRAVEL_MAX_SPEED 600.0 // 600.0 if no micro steps
+#define STEPS_TO_CM 1.0 // CHANGE THIS TO HAVE steps * STEPS_TO_CM = cm
+#define CM_TO_STEPS 1.0 // CHANGE THIS TO HAVE cm * CM_TO_STEPS = steps
+#define STEPPER_WRITE_SPEED 200.0 // 200.0 if no micro steps
+#define STEPPER_TRAVEL_SPEED 600.0 // 600.0 if no micro steps
 #define STEPPER_CALIBRATE_SPEED 100.0 // 100.0 if no micro steps
 #define SERVO_UP 160
 #define SERVO_DOWN 30
@@ -24,10 +26,6 @@ const int servoPin = 4; // stepZPin
 // Mode: 0 if travelling, 1 if writing
 char mode;
 
-// Current position variables
-float currX;
-float currY;
-
 // Declare Stepper Motor(s)
 AccelStepper stepperX(AccelStepper::DRIVER, stepXPin, dirXPin);
 AccelStepper stepperY(AccelStepper::DRIVER, stepYPin, dirYPin);
@@ -39,23 +37,23 @@ Servo writingServo;
 /****************** FUNCTIONS ******************/
 
 /**
- * /brief Takes a speed (steps/s) and converts it to cms per second
+ * /brief Takes steps and converts it to cms
  *
- * /param speed Speed in steps/s
- * /return The speed in cm/s
+ * /param steps Number of steps
+ * /return Converted cms
  */
-float toCPS(float speed) {
-  return speed * STEPS_TO_CM;
+float stepsToCms(long steps) {
+  return float(steps) * STEPS_TO_CM;
 }
 
 /**
- * /brief Takes a speed (cm/s) and converts it to steps per second
+ * /brief Takes cms and converts it to steps
  *
- * /param speed Speed in cm/s
- * /return The speed in steps/s
+ * /param cms Number of cms
+ * /return Converted steps
  */
-float toCPS(float speed) {
-  return speed * CM_TO_STEPS;
+long cmsToSteps(float cms) {
+  return long(cms * CM_TO_STEPS);
 }
 
 /**
@@ -113,7 +111,7 @@ void calibrate() {
     stepperX.runSpeed();
   }
   stepperX.stop();
-  currX = 0.0;
+  stepperX.setCurrentPosition(0);
 
   // Get y == 0.0 second
   // While is no connection between the head and y axis
@@ -121,7 +119,7 @@ void calibrate() {
     stepperY.runSpeed();
   }
   stepperY.stop();
-  currY = 0.0;
+  stepperY.setCurrentPosition(0);
 
   return;
 }
@@ -133,13 +131,50 @@ void calibrate() {
  * /param y The y coordinate we want to go to, in cm
  */
 void goTo(float x, float y) {
-  unsigned long start = millis();
-  
+  // Convert to steps
+  long xSteps = cmsToSteps(x);
+  long ySteps = cmsToSteps(y);
+
+  // Use as position targets
+  stepperX.moveTo(xSteps);
+  stepperY.moveTo(ySteps);
+
+  // Find angle
+  double angle;
+  if(xSteps - stepperX.currentPosition() == 0) {
+    angle = PI / 2;
+  } else {
+    angle = atan2((ySteps - stepperY.currentPosition()), (xSteps - stepperX.currentPosition()));
+  }
+
+  // Find the speeds of both motors
+  float currSpeed;
+  if(mode == WRITE_MODE) {
+    currSpeed = STEPPER_WRITE_SPEED;
+  } else { // Otherwise, travel mode
+    currSpeed = STEPPER_TRAVEL_SPEED;
+  }
+  stepperX.setSpeed(float(cos(angle) * currSpeed));
+  stepperY.setSpeed(float(sin(angle) * currSpeed));
+
+  // Move there!
+  while (stepperX.distanceToGo() != 0 || stepperY.distanceToGo() != 0) {
+    if (stepperX.distanceToGo() != 0) {
+      stepperX.runSpeed();
+    }
+    if (stepperY.distanceToGo() != 0) {
+      stepperY.runSpeed();
+    }
+  }
+
+  return;
 }
 
 /****************** RUNTIME ******************/
 
 void setup() {
+  Serial.begin(9600);
+
   // Set up servo params
   writingServo.attach(servoPin);
 
@@ -152,7 +187,14 @@ void setup() {
 
 void loop() {
   // Run tests
-  travelMode();
-  stepperX.runSpeed();
-  stepperY.runSpeed();
+  goTo(0.0, 200.0);
+  goTo(200.0, 200.0);
+  goTo(400.0, 0.0);
+  goTo(0.0, 0.0);
+  delay(1000);
+  goTo(1000.0, 7.0);
+  goTo(4000.0, 11.3);
+  goTo(10000.0, 200.0);
+  goTo(0.0, 0.0);
+  delay(10000);
 }
