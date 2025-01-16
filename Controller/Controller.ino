@@ -131,8 +131,5 @@ void loop() {
   // Run tests
   travelMode();
   stepperX.runSpeed();
-  writeMode();
-  travelMode();
-  stepperY.runSpeed();
   stepperY.runSpeed();
 }
