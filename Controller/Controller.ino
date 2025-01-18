@@ -168,10 +168,6 @@ void goTo(float x, float y) {
 
   // Move there!
   while (stepperX.distanceToGo() != 0 || stepperY.distanceToGo() != 0) {
-    Serial.print("X: ");
-    Serial.print(stepperX.distanceToGo());
-    Serial.print(" Y: ");
-    Serial.println(stepperY.distanceToGo());
     if (stepperX.distanceToGo() != 0) {
       stepperX.runSpeed();
     }
