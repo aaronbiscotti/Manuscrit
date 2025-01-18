@@ -23,6 +23,8 @@ const int stepYPin = 3;
 const int dirYPin = 6;
 const int servoPin = 4; // stepZPin
 
+const float fBufSize = 2 * sizeof(float);
+
 // Mode: 0 if travelling, 1 if writing
 char mode;
 
@@ -173,7 +175,7 @@ void goTo(float x, float y) {
 /****************** RUNTIME ******************/
 
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(115200);
 
   // Set up servo params
   writingServo.attach(servoPin);
@@ -183,18 +185,33 @@ void setup() {
 
   // Set the starting mode
   travelMode();
+
+  // TODO: Remove this test print
+  Serial.println("Arduino is ready.");
 }
 
 void loop() {
   // Run tests
-  goTo(0.0, 200.0);
-  goTo(200.0, 200.0);
-  goTo(400.0, 0.0);
-  goTo(0.0, 0.0);
-  delay(1000);
-  goTo(1000.0, 7.0);
-  goTo(4000.0, 11.3);
-  goTo(10000.0, 200.0);
-  goTo(0.0, 0.0);
-  delay(10000);
+  // goTo(0.0, 200.0);
+  // goTo(200.0, 200.0);
+  // goTo(400.0, 0.0);
+  // goTo(0.0, 0.0);
+  // delay(1000);
+  // goTo(1000.0, 7.0);
+  // goTo(4000.0, 11.3);
+  // goTo(10000.0, 200.0);
+  // goTo(0.0, 0.0);
+  // delay(10000);
+
+  // Wait for the next command
+  if (Serial.available() >= fBufSize) {  // Wait until at least 2 floats are available
+    byte buffer[fBufSize];  // Create a buffer to store 2 floats
+    for (int i = 0; i < fBufSize; i++) {
+      buffer[i] = Serial.read();  // Read each byte into the buffer
+    }
+    float receivedFloats[2];
+    memcpy(&receivedFloat, buffer, fBufSize);  // Copy the bytes into a float variable
+    Serial.print("Received: ");
+    Serial.println(receivedFloat);  // Print the received float
+  }
 }

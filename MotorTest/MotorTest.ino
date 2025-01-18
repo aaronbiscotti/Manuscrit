@@ -32,8 +32,8 @@ void setup() {
 
 void loop() {
   // Run tests
-  stepperX.runSpeedToPosition();
-  stepperY.runSpeed();
+  stepperX.stop();
+  stepperY.stop();
   writingServo.write(180);
 
   /*
