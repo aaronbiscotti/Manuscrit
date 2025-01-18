@@ -23,10 +23,11 @@ const int stepYPin = 3;
 const int dirYPin = 6;
 const int servoPin = 4; // stepZPin
 
-// Declare variables
+// Declare communication variables
 float input1 = 0.0;
 float input2 = 0.0;
 const int fBufSize = 2 * sizeof(float);
+float curr_job = 0.0;
 
 // Mode: 0 if travelling, 1 if writing
 char mode;
@@ -216,5 +217,31 @@ void loop() {
     // Print the received data to Serial Monitor
     Serial.write((byte*)&input1, sizeof(float));
     Serial.write((byte*)&input2, sizeof(float));
+    
+    // Do the operations
+    // If first is -, it is a command
+    if (input1 < 0) {
+      if (input2 < 0) { // If second is -, it is a job start/end number
+        if (curr_job == input2) { // Is this is the job end
+          calibrate();
+          // Serial.print("JOB "); Serial.print(int(-curr_job)); Serial.println(" ENDED");
+        } else { // This is a new job
+          curr_job = input2;
+          // Serial.print("JOB "); Serial.print(int(-curr_job)); Serial.println(" STARTED");
+          delay(2000); // 2 second sleep; TODO: Replace with a button or better sleep time
+        }
+      } else { // If the second is >= 0, it is a mode change
+        if (input2 == WRITE_MODE) { // Set to write mode
+          writeMode();
+          // Serial.println("WRITE MODE SET");
+        } else { // Set to travel mode 
+          travelMode();
+          // Serial.println("TRAVEL MODE SET");
+        }
+      }
+    } else { // If first is >= 0, it is coordinates
+      goTo(input1, input2);
+      // Serial.print("GT: "); Serial.print(input1); Serial.print(" "); Serial.println(input2);
+    }
   }
 }
