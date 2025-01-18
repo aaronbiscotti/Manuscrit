@@ -147,8 +147,11 @@ void goTo(float x, float y) {
 
   // Find angle
   double angle;
-  if(xSteps - stepperX.currentPosition() == 0) {
+  if (xSteps - stepperX.currentPosition() == 0) {
     angle = PI / 2;
+    if (ySteps - stepperY.currentPosition() < 0) {
+      angle = -angle;
+    }
   } else {
     angle = atan2((ySteps - stepperY.currentPosition()), (xSteps - stepperX.currentPosition()));
   }
@@ -165,6 +168,10 @@ void goTo(float x, float y) {
 
   // Move there!
   while (stepperX.distanceToGo() != 0 || stepperY.distanceToGo() != 0) {
+    Serial.print("X: ");
+    Serial.print(stepperX.distanceToGo());
+    Serial.print(" Y: ");
+    Serial.println(stepperY.distanceToGo());
     if (stepperX.distanceToGo() != 0) {
       stepperX.runSpeed();
     }
@@ -187,14 +194,16 @@ void setup() {
   // Calibrate the device on startup
   calibrate();
 
-  // Set the starting mode
+  // Set the starting mode to travel
   travelMode();
-
 }
 
 void loop() {
   // Run tests
   // goTo(0.0, 200.0);
+  // goTo(200.0, 200.0);
+  // goTo(200.0, 0.0);
+  // goTo(0.0, 0.0);
   // goTo(200.0, 200.0);
   // goTo(400.0, 0.0);
   // goTo(0.0, 0.0);
