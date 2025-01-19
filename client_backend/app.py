@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, session
+from flask import Flask, request, jsonify, session, send_file
 from flask_cors import CORS
 from datetime import datetime
 import os
@@ -186,6 +186,17 @@ def get_pending_gcode():
         if filename.endswith('.nc'):
             gcode_files.append(filename)
     return jsonify({'files': gcode_files})
+
+@app.route('/download-gcode/<filename>', methods=['GET'])
+def download_gcode(filename):
+    try:
+        gcode_path = os.path.join(GCODE_FOLDER, filename)
+        if not os.path.exists(gcode_path):
+            return jsonify({'error': 'File not found'}), 404
+        # Send the file as an attachment
+        return send_file(gcode_path, as_attachment=True)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/execute-gcode/<filename>', methods=['POST'])
 def execute_gcode(filename):
