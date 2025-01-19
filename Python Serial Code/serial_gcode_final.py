@@ -2,6 +2,8 @@ import serial
 import time
 import struct
 import queue
+import sys
+import os
 
 # Remember, integers are longs in python
 
@@ -136,3 +138,26 @@ try:
 except KeyboardInterrupt:
     print("Exiting program.")
     arduino.close()
+
+if __name__ == "__main__":
+    if len(sys.argv) > 1:
+        # If file path provided as argument, process it
+        Q = process_gcode_file(sys.argv[1], 1)
+        while not Q.empty():
+            instruction = Q.get()
+            user_input1 = instruction[0]
+            user_input2 = instruction[1]
+            
+            # FOR TESTING
+            print(user_input1)
+            print(user_input2)
+            
+            # Send the data
+            send_data(user_input1, user_input2)
+            response = receive_data()
+            if response:
+                print(f"Received from Arduino: {response}")
+            
+        time.sleep(2)
+        arduino.close()
+        sys.exit(0)
