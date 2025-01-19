@@ -58,13 +58,6 @@ def main():
         print(f"Error running serial_gcode_final.py: {e}")
         sys.exit(1)
 
-    # 4) Remove the local file after successful execution
-    try:
-        os.remove(local_path)
-        print(f"Removed local file: {local_path}")
-    except OSError as e:
-        print(f"Warning: Could not remove local file {local_path}: {e}")
-
     # 5) Remove from the server queue as well
     #    Make sure you have a route: @app.route('/remove-from-queue/<filename>', methods=['DELETE'])
     remove_url = f"{BACKEND_URL}/remove-from-queue/{filename}"

@@ -195,7 +195,7 @@ def remove_from_queue(filename):
         if os.path.exists(gcode_path):
             os.remove(gcode_path)
 
-        return jsonify({'message': f'Removed {filename} from queue and file system'}), 200
+        return jsonify({'message': f'Removed {filename} from queue'}), 200
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500
