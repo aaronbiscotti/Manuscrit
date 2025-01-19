@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 
 interface QueueItem {
+  user_name: string;
   timestamp: string;
   status: "pending" | "processing" | "completed" | "failed";
 }
@@ -37,6 +38,7 @@ export default function QueueDisplay({ onSetUpdate }: QueueDisplayProps) {
   }, [onSetUpdate]);
 
   const formatTimestamp = (timestamp: string) => {
+    // e.g. 2025 01 19 _ 08 57 32
     const year = timestamp.slice(0, 4);
     const month = timestamp.slice(4, 6);
     const day = timestamp.slice(6, 8);
@@ -58,9 +60,11 @@ export default function QueueDisplay({ onSetUpdate }: QueueDisplayProps) {
         <ul>
           {queue.map((item) => (
             <li key={item.timestamp}>
-              <span>{formatTimestamp(item.timestamp)}</span>
-              {" - "}
-              <span>{item.status}</span>
+              <strong>Name:</strong> {item.user_name}
+              {" | "}
+              <strong>Time:</strong> {formatTimestamp(item.timestamp)}
+              {" | "}
+              <strong>Status:</strong> {item.status}
             </li>
           ))}
         </ul>
