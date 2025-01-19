@@ -1,0 +1,8 @@
+[build]
+builder = "nixpacks"
+buildCommand = "cd client_backend && pip install -r requirements.txt"
+
+[deploy]
+startCommand = "cd client_backend && python app.py"
+healthcheckPath = "/"
+healthcheckTimeout = 100
