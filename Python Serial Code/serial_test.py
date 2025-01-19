@@ -5,10 +5,19 @@ import queue
 
 # Remember, integers are longs in python
 
-arduino_port = 'COM3'
+arduino_port = 'COM6'
 baud_rate = 115200
 steps_to_cm = 1600
 cm_to_steps = 1 / steps_to_cm
+
+# Open the serial connection
+try:
+    arduino = serial.Serial(port=arduino_port, baudrate=baud_rate, timeout=1)
+    print(f"Connected to Arduino on {arduino_port}")
+    time.sleep(2)  # Allow Arduino to initialize
+except serial.SerialException as e:
+    print(f"Error connecting to Arduino: {e}")
+    exit()
 
 ### DATA SENDING ###
 
@@ -24,12 +33,13 @@ def send_data(input1, input2):
 def receive_data():
     """Receive data from the Arduino."""
     
-    if arduino.in_waiting > 0:  # Check if there's data to read
-        received_data = arduino.read(8)
-        """size of long is 4 bytes"""
-        
-        return struct.unpack('ll', received_data)  # Read and decode the data
-    return None
+    while arduino.in_waiting == 0:  # Check if there's data to read
+        continue
+
+    received_data = arduino.read(8)
+    """size of long is 4 bytes"""
+    ret = struct.unpack('ll', received_data)  # Read and decode the data
+    return ret 
 
 ### FILE PROCESSING ###
 
@@ -38,9 +48,9 @@ def gcode_to_steps(gcode_coordinate):
 
 def process_gcode_file(file_path, job_num):
     """
-    Processes a .nc (gcode) file line by line, converts to custom language, and stores the result in a queue.
+    Processes a gcode file line by line, converts to custom language, and stores the result in a queue.
 
-    :param file_path: Path to the .nc file
+    :param file_path: Path to the .txt file
     :param job_num: The job number
     :return: A queue containing processed data
     """
@@ -50,6 +60,7 @@ def process_gcode_file(file_path, job_num):
     try:
         with open(file_path, 'r') as file:
             processed_queue.put([-1, -job_num])
+            processed_queue.put([-1, 1])
             writing = False
 
             for line in file:
@@ -63,9 +74,9 @@ def process_gcode_file(file_path, job_num):
                 if len(parts) < 3:
                     print(f"Skipping bad line: {line}")
                     continue
-                g_value = parts[0]
-                x_value = int(parts[1][1:])
-                y_value = int(parts[2][1:])
+                g_value = int(parts[0][1:])
+                x_value = gcode_to_steps(int(parts[1][1:]))
+                y_value = -gcode_to_steps(int(parts[2][1:])) # REFLECT OVER THE AXIS
 
                 # Change writing mode check
                 if g_value == 0: # travel mode
@@ -90,24 +101,11 @@ def process_gcode_file(file_path, job_num):
     except Exception as e:
         print(f"An error occurred while processing the file: {e}")
 
-    # FOR TESTING
-    print(processed_queue)
-
     return processed_queue
 
 ### RUNTIME ###
 
-# Open the serial connection
-try:
-    arduino = serial.Serial(port=arduino_port, baudrate=baud_rate, timeout=1)
-    print(f"Connected to Arduino on {arduino_port}")
-    time.sleep(2)  # Allow Arduino to initialize
-except serial.SerialException as e:
-    print(f"Error connecting to Arduino: {e}")
-    exit()
-
-# Example of bidirectional communication
-
+# Bidirectional communication
 try:
     job = 1
     while True:
@@ -120,8 +118,11 @@ try:
             user_input1 = instruction[0]
             user_input2 = instruction[1]
             
-            # print(user_input1)
-            # print(user_input2)
+            # FOR TESTING
+            print(user_input1)
+            print(user_input2)
+            
+            # Send the data
             send_data(user_input1, user_input2)
 
             # Wait and receive response
