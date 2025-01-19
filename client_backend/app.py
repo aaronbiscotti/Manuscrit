@@ -112,6 +112,9 @@ def process_queue():
         except Exception as e:
             print("Uh oh")
 
+processing_thread = threading.Thread(target=process_queue, daemon=True)
+processing_thread.start()
+
 @app.route('/', methods=['GET'])
 def health():
     return "OK", 200
@@ -216,8 +219,6 @@ def execute_gcode(filename):
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-if __name__ == '__main__':
-    processing_thread = threading.Thread(target=process_queue, daemon=True)
-    processing_thread.start()
-    
-    app.run(host='0.0.0.0', port=5000, debug=False)
+if __name__ == "__main__":
+    # For local dev/testing only
+    app.run(host="0.0.0.0", port=5000, debug=False)
