@@ -53,8 +53,8 @@ def process_drawing(png_path, gcode_path):
                 first_point = True
                 for point in contour:
                     x, y = point[0]
-                    x_scaled = int(x * 80) 
-                    y_scaled = int(-y * 80)
+                    x_scaled = int(x * 0.5) 
+                    y_scaled = int(-y * 0.5)
                     
                     if first_point:
                         # Travel mode (pen up)
