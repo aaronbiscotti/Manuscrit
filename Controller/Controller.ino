@@ -10,11 +10,11 @@
 #define CALIBRATE_MODE 2
 #define STEPS_TO_CM 1.0 // CHANGE THIS TO HAVE steps * STEPS_TO_CM = cm
 #define CM_TO_STEPS 1.0 // CHANGE THIS TO HAVE cm * CM_TO_STEPS = steps
-#define STEPPER_WRITE_SPEED 700.0 // 700.0 if no micro steps
+#define STEPPER_WRITE_SPEED 800.0 // 800.0 if no micro steps
 #define STEPPER_TRAVEL_SPEED 980.0 // 980.0 if no micro steps
-#define STEPPER_CALIBRATE_SPEED 500.0 // 500.0 if no micro steps
-#define SERVO_UP 160
-#define SERVO_DOWN 30
+#define STEPPER_CALIBRATE_SPEED -800.0 // -800.0 if no micro steps
+#define SERVO_UP -90
+#define SERVO_DOWN 90
 
 // Declare pins
 const int stepXPin = 2;
@@ -22,6 +22,8 @@ const int dirXPin = 5;
 const int stepYPin = 3;
 const int dirYPin = 6;
 const int servoPin = 4; // stepZPin
+const int xCalPin = 7; // dirZPin
+const int yCalPin = 11; // limZPin
 
 // Declare communication variables
 long input1 = 0;
@@ -103,8 +105,8 @@ void calibrate() {
   mode = CALIBRATE_MODE;
 
   // Set calibrate speed
-  stepperX.setMaxSpeed(STEPPER_CALIBRATE_SPEED + 1);
-  stepperY.setMaxSpeed(STEPPER_CALIBRATE_SPEED + 1);
+  stepperX.setMaxSpeed(STEPPER_CALIBRATE_SPEED - 1);
+  stepperY.setMaxSpeed(STEPPER_CALIBRATE_SPEED - 1);
   stepperX.setSpeed(STEPPER_CALIBRATE_SPEED);
   stepperY.setSpeed(STEPPER_CALIBRATE_SPEED);
 
@@ -113,7 +115,7 @@ void calibrate() {
 
   // Get x == 0.0 first
   // While is no connection between for the head and x axis
-  while(false) { // TODO: Change this to detect
+  while(digitalRead(xCalPin) == LOW) {
     stepperX.runSpeed();
   }
   stepperX.stop();
@@ -121,7 +123,7 @@ void calibrate() {
 
   // Get y == 0.0 second
   // While is no connection between the head and y axis
-  while(false) { // TODO: Change this to detect
+  while(digitalRead(yCalPin) == LOW) {
     stepperY.runSpeed();
   }
   stepperY.stop();
@@ -186,6 +188,10 @@ void setup() {
 
   // Set up servo params
   writingServo.attach(servoPin);
+
+  // Set up callibration pads
+  pinMode(xCalPin, INPUT);
+  pinMode(yCalPin, INPUT);
 
   // Calibrate the device on startup
   calibrate();

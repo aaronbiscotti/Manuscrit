@@ -25,8 +25,8 @@ except serial.SerialException as e:
 
 def send_data(input1, input2):
     """Send data to the Arduino."""
-    data1 = gcode_to_steps(input1)
-    data2 = gcode_to_steps(input2)
+    data1 = input1
+    data2 = input2
     
     packed_data = struct.pack('ll', data1, data2)
     arduino.write(packed_data)  # Encode the string into bytes
@@ -46,7 +46,7 @@ def receive_data():
 ### FILE PROCESSING ###
 
 def gcode_to_steps(gcode_coordinate):
-    return int(gcode_coordinate * 1) #TODO: CHANGE CONSTANT
+    return int(gcode_coordinate * 80) #TODO: CHANGE CONSTANT
 
 def process_gcode_file(file_path, job_num):
     """
@@ -78,7 +78,7 @@ def process_gcode_file(file_path, job_num):
                     continue
                 g_value = int(parts[0][1:])
                 x_value = gcode_to_steps(int(parts[1][1:]))
-                y_value = -gcode_to_steps(int(parts[2][1:])) # REFLECT OVER THE AXIS
+                y_value = abs(gcode_to_steps(int(parts[2][1:]))) # REFLECT OVER THE AXIS
 
                 # Change writing mode check
                 if g_value == 0: # travel mode
@@ -94,7 +94,8 @@ def process_gcode_file(file_path, job_num):
                     continue
 
                 # Send the coordinates
-                processed_queue.put([x_value, y_value])
+                if x_value <= gcode_to_steps(150) or y_value <= gcode_to_steps(150): # Limits
+                    processed_queue.put([x_value, y_value])
             
             # Clarify the end of the job
             processed_queue.put([-1, -job_num])
