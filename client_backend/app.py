@@ -179,6 +179,27 @@ def upload():
     except Exception:
         return jsonify({'error': 'Server error'}), 500
 
+@app.route('/remove-from-queue/<filename>', methods=['DELETE'])
+def remove_from_queue(filename):
+    try:
+        # 1) Parse timestamp from "drawing_<timestamp>.nc"
+        timestamp = filename.replace('drawing_', '').replace('.nc', '')
+
+        # 2) Remove the job from the dictionary (if it exists)
+        with jobs_lock:
+            if timestamp in jobs:
+                del jobs[timestamp]
+
+        # 3) Remove the file from the gcode folder (if it exists)
+        gcode_path = os.path.join(GCODE_FOLDER, filename)
+        if os.path.exists(gcode_path):
+            os.remove(gcode_path)
+
+        return jsonify({'message': f'Removed {filename} from queue and file system'}), 200
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 @app.route('/pending-gcode', methods=['GET'])
 def get_pending_gcode():
     gcode_files = []
