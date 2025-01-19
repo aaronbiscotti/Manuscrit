@@ -112,6 +112,9 @@ def process_queue():
         except Exception as e:
             print("Uh oh")
 
+@app.route('/', methods=['GET'])
+def health():
+    return "OK", 200
 
 @app.route('/queue', methods=['GET'])
 def get_queue():
