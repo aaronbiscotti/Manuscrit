@@ -220,4 +220,4 @@ if __name__ == '__main__':
     processing_thread = threading.Thread(target=process_queue, daemon=True)
     processing_thread.start()
     
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=False)
