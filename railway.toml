@@ -1,8 +1,8 @@
 [build]
 builder = "nixpacks"
 buildCommand = """
-apt-get update && apt-get install -y python3 python3-pip
-cd client_backend && pip3 install -r requirements.txt
+apt-get update && apt-get install -y python3 python3-pip \
+&& cd client_backend && pip3 install -r requirements.txt
 """
 
 [deploy]
