@@ -16,7 +16,7 @@ To pull:
 git pull
 
 TO CHECK PENDING G-CODE:
-`curl https://manuscrit-production.up.railway.app/pending-gcode`
+``
 
 You'll get something like `{"files":["drawing_20250119_022451.nc","drawing_20250119_090554.nc"]}`
 
@@ -27,4 +27,6 @@ Then run `python ".\Python Serial Code\serial_gcode_final.py" "client_backend\gc
 
 OR
 
-Just run `python .\local_auto_exe.py`
+Just run `python .\local_auto_exe.py` 
+
+Extra

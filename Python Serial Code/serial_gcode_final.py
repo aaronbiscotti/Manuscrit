@@ -46,7 +46,7 @@ def receive_data():
 ### FILE PROCESSING ###
 
 def gcode_to_steps(gcode_coordinate):
-    return int(gcode_coordinate * 80) #TODO: CHANGE CONSTANT
+    return int(gcode_coordinate * 200) #TODO: CHANGE CONSTANT
 
 def process_gcode_file(file_path, job_num):
     """
@@ -94,8 +94,11 @@ def process_gcode_file(file_path, job_num):
                     continue
 
                 # Send the coordinates
-                if x_value <= gcode_to_steps(150) or y_value <= gcode_to_steps(150): # Limits
-                    processed_queue.put([x_value, y_value])
+                while x_value > gcode_to_steps(150): # Limits
+                    x_value = x_value // 10
+                while y_value > gcode_to_steps(150): # Limits
+                    y_value = y_value // 10
+                processed_queue.put([x_value, y_value])
             
             # Clarify the end of the job
             processed_queue.put([-1, -job_num])
