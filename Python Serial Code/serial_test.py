@@ -5,16 +5,17 @@ import queue
 
 # Remember, integers are longs in python
 
-# Replace 'COM3' with the correct port for your Arduino (e.g., '/dev/ttyUSB0' for Linux/Mac)
 arduino_port = 'COM3'
-baud_rate = 115200  # Must match the Arduino's Serial.begin(baud_rate)
+baud_rate = 115200
+steps_to_cm = 1600
+cm_to_steps = 1 / steps_to_cm
 
 ### DATA SENDING ###
 
 def send_data(input1, input2):
     """Send data to the Arduino."""
-    data1 = int(input1)
-    data2 = int(input2)
+    data1 = gcode_to_steps(input1)
+    data2 = gcode_to_steps(input2)
     
     packed_data = struct.pack('ll', data1, data2)
     arduino.write(packed_data)  # Encode the string into bytes
@@ -31,6 +32,9 @@ def receive_data():
     return None
 
 ### FILE PROCESSING ###
+
+def gcode_to_steps(gcode_coordinate):
+    return int(gcode_coordinate * 1) #TODO: CHANGE CONSTANT
 
 def process_gcode_file(file_path, job_num):
     """
@@ -103,6 +107,7 @@ except serial.SerialException as e:
     exit()
 
 # Example of bidirectional communication
+
 try:
     job = 1
     while True:
