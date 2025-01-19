@@ -2,6 +2,8 @@
 
 build18 2025 repo for Manuscrit. Created by Bryan Hong, Aaron Tang, Jonathan Waller, and Barbara Zhuo.
 
+SITE IS LIVE ON https://manuscrit-gk3qwxg9u-aaronbiscottis-projects.vercel.app/
+
 To clone:
 git clone <URL>
 
