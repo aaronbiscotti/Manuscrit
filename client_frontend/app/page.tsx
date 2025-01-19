@@ -187,7 +187,11 @@ export default function Home() {
           ref={canvasRef}
           width={300}
           height={300}
-          style={{ border: "1px solid black" }}
+          style={{
+            border: "1px solid black",
+            touchAction: "none",
+            userSelect: "none",
+          }}
           onMouseDown={startDrawing}
           onMouseMove={draw}
           onMouseUp={stopDrawing}
