@@ -201,7 +201,7 @@ def execute_gcode(filename):
         )
 
         try:
-            subprocess.run(['python', serial_code_path, gcode_path], check=True)
+            subprocess.run(['python3', serial_code_path, gcode_path], check=True)
             processed_path = os.path.join(PROCESSED_FOLDER, filename)
             shutil.move(gcode_path, processed_path)
             
