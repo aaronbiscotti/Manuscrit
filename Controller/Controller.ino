@@ -10,9 +10,9 @@
 #define CALIBRATE_MODE 2
 #define STEPS_TO_CM 1.0 // CHANGE THIS TO HAVE steps * STEPS_TO_CM = cm
 #define CM_TO_STEPS 1.0 // CHANGE THIS TO HAVE cm * CM_TO_STEPS = steps
-#define STEPPER_WRITE_SPEED 200.0 // 200.0 if no micro steps
-#define STEPPER_TRAVEL_SPEED 600.0 // 600.0 if no micro steps
-#define STEPPER_CALIBRATE_SPEED 100.0 // 100.0 if no micro steps
+#define STEPPER_WRITE_SPEED 700.0 // 700.0 if no micro steps
+#define STEPPER_TRAVEL_SPEED 980.0 // 980.0 if no micro steps
+#define STEPPER_CALIBRATE_SPEED 500.0 // 500.0 if no micro steps
 #define SERVO_UP 160
 #define SERVO_DOWN 30
 
