@@ -7,8 +7,11 @@ export default function Home() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const [status, setStatus] = useState("");
+  const [userName, setUserName] = useState("");
+
   const queueUpdateRef = useRef<(() => void) | undefined>(undefined);
 
+  //Setter for the queue update
   const setQueueUpdate = (updateFn: () => void) => {
     queueUpdateRef.current = updateFn;
   };
@@ -79,27 +82,59 @@ export default function Home() {
     ctx.fillRect(0, 0, canvas.width, canvas.height);
   };
 
+  // If canvas is all white then return true
+  const isCanvasBlank = (canvas: HTMLCanvasElement): boolean => {
+    const blank = document.createElement("canvas");
+    blank.width = canvas.width;
+    blank.height = canvas.height;
+
+    const bctx = blank.getContext("2d");
+    if (!bctx) return false;
+    bctx.fillStyle = "white";
+    bctx.fillRect(0, 0, blank.width, blank.height);
+
+    return blank.toDataURL() === canvas.toDataURL();
+  };
+
   const submitDrawing = async () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
+    // 1) Check name
+    if (!userName.trim()) {
+      setStatus("Name is required!");
+      return;
+    }
+
+    // 2) Check blank canvas
+    if (isCanvasBlank(canvas)) {
+      setStatus("Canvas is blank. Please draw something!");
+      return;
+    }
+
     try {
+      // Copy current drawing to a temp canvas
       const tempCanvas = document.createElement("canvas");
       tempCanvas.width = canvas.width;
       tempCanvas.height = canvas.height;
+
       const tempCtx = tempCanvas.getContext("2d");
       if (!tempCtx) return;
 
-      // Create temp canvas
+      // Fill temp with white
       tempCtx.fillStyle = "white";
       tempCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+      // Copy user's drawing
       tempCtx.drawImage(canvas, 0, 0);
 
+      // Convert to a Blob
       const blob = await new Promise<Blob>((resolve) =>
         tempCanvas.toBlob((b) => resolve(b!), "image/png")
       );
 
+      // Build form data with "name" and "drawing"
       const formData = new FormData();
+      formData.append("name", userName);
       formData.append("drawing", blob, "drawing.png");
 
       const response = await fetch(
@@ -113,12 +148,14 @@ export default function Home() {
       if (response.ok) {
         setStatus("Drawing submitted successfully!");
         clearCanvas();
+
         // Trigger queue updates
         if (queueUpdateRef.current) {
           queueUpdateRef.current();
         }
       } else {
-        throw new Error("Upload failed");
+        const data = await response.json();
+        setStatus(`Error: ${data?.error || "Upload failed"}`);
       }
     } catch (error) {
       console.error("Error:", error);
@@ -129,8 +166,21 @@ export default function Home() {
   };
 
   return (
-    <main>
+    <main style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
       <h1>Draw Something</h1>
+
+      {/* Name field */}
+      <div>
+        <label htmlFor="nameInput">Name: </label>
+        <input
+          id="nameInput"
+          type="text"
+          value={userName}
+          onChange={(e) => setUserName(e.target.value)}
+          placeholder="Enter your name"
+          required
+        />
+      </div>
 
       <div>
         <canvas
@@ -146,14 +196,14 @@ export default function Home() {
           onTouchMove={draw}
           onTouchEnd={stopDrawing}
         />
-
-        <div>
-          <button onClick={clearCanvas}>Clear</button>
-          <button onClick={submitDrawing}>Submit</button>
-        </div>
-
-        {status && <p>{status}</p>}
       </div>
+
+      <div>
+        <button onClick={clearCanvas}>Clear</button>
+        <button onClick={submitDrawing}>Submit</button>
+      </div>
+
+      {status && <p style={{ color: "red" }}>{status}</p>}
 
       <QueueDisplay onSetUpdate={setQueueUpdate} />
     </main>
