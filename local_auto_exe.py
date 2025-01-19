@@ -48,6 +48,17 @@ def main():
 
     print("Download successful.")
 
+    # Remove from the server queue
+    #    Make sure you have a route: @app.route('/remove-from-queue/<filename>', methods=['DELETE'])
+    remove_url = f"{BACKEND_URL}/remove-from-queue/{filename}"
+    try:
+        resp = requests.delete(remove_url)
+        resp.raise_for_status()
+        result_data = resp.json()
+        print("Removed from server queue:", result_data.get("message", "No message"))
+    except (requests.RequestException, ValueError) as e:
+        print(f"Error removing file from server queue: {e}")
+
     # 3) Execute the G-code locally with serial_gcode_final.py
     print(f"Executing local script on {local_path} ...")
 
@@ -58,16 +69,6 @@ def main():
         print(f"Error running serial_gcode_final.py: {e}")
         sys.exit(1)
 
-    # 5) Remove from the server queue as well
-    #    Make sure you have a route: @app.route('/remove-from-queue/<filename>', methods=['DELETE'])
-    remove_url = f"{BACKEND_URL}/remove-from-queue/{filename}"
-    try:
-        resp = requests.delete(remove_url)
-        resp.raise_for_status()
-        result_data = resp.json()
-        print("Removed from server queue:", result_data.get("message", "No message"))
-    except (requests.RequestException, ValueError) as e:
-        print(f"Error removing file from server queue: {e}")
 
 if __name__ == "__main__":
     main()
