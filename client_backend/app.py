@@ -45,7 +45,6 @@ def process_drawing(png_path, gcode_path):
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         _, binary = cv2.threshold(gray, 128, 255, cv2.THRESH_BINARY_INV)
         contours, _ = cv2.findContours(binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-
         skel = np.zeros_like(binary)
         kernel = cv2.getStructuringElement(cv2.MORPH_CROSS, (3, 3))
         done = False
@@ -58,7 +57,7 @@ def process_drawing(png_path, gcode_path):
             if cv2.countNonZero(binary) == 0:
                 done = True
 
-        # Now find contours in the one‐pixel‐wide skeleton
+        # Now find contours in the one-pixel-wide skeleton
         skeleton_contours, _ = cv2.findContours(skel, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
 
         # Override the old contours with the new skeleton contours
@@ -71,9 +70,9 @@ def process_drawing(png_path, gcode_path):
                 first_point = True
                 for point in contour:
                     x, y = point[0]
-                    x_scaled = int(x * 0.5) 
-                    y_scaled = int(-y * 0.5)
-                    
+                    x_scaled = int(x * 80)  # Updated scaling factor
+                    y_scaled = int(y * 80)  # Removed Y-axis inversion
+
                     if first_point:
                         # Travel mode (pen up)
                         f.write(f"G0 X{x_scaled} Y{y_scaled}\n")
