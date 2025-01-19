@@ -4,23 +4,22 @@ import struct
 
 # Remember, integers are longs in python
 
-# Replace 'COM3' with the correct port for your Arduino (e.g., '/dev/ttyUSB0' for Linux/Mac)
 arduino_port = 'COM3'
-baud_rate = 115200  # Must match the Arduino's Serial.begin(baud_rate)
+baud_rate = 115200
+steps_to_cm = 1600
+cm_to_steps = 1 / steps_to_cm
 
-# Open the serial connection
 try:
     arduino = serial.Serial(port=arduino_port, baudrate=baud_rate, timeout=1)
     print(f"Connected to Arduino on {arduino_port}")
-    time.sleep(2)  # Allow Arduino to initialize
 except serial.SerialException as e:
     print(f"Error connecting to Arduino: {e}")
     exit()
 
 def send_data(input1, input2):
     """Send data to the Arduino."""
-    data1 = int(input1)
-    data2 = int(input2)
+    data1 = gcode_to_steps(input1)
+    data2 = gcode_to_steps(input2)
     
     packed_data = struct.pack('ll', data1, data2)
     arduino.write(packed_data)  # Encode the string into bytes
@@ -36,15 +35,17 @@ def receive_data():
         return struct.unpack('ll', received_data)  # Read and decode the data
     return None
 
-# Example of bidirectional communication
+def gcode_to_steps(gcode_coordinate):
+    return int(gcode_coordinate * 1) #TODO: CHANGE CONSTANT
+
 try:
     while True:
         # Send data to Arduino
-        user_input1 = input("Enter the x coordinate/first command (or 'exit' to quit): ")
+        user_input1 = input("Enter the x coordinate/first command: ")
         if user_input1.lower() == 'exit':
             break
 
-        user_input2 = input("Enter the y coordinate/second command (or 'exit' to quit): ")
+        user_input2 = input("Enter the y coordinate/second command: ")
         if user_input2.lower() == 'exit':
             break
         print(user_input1)
@@ -53,13 +54,9 @@ try:
 
         
         # Wait and receive response
-        time.sleep(1)
         response = receive_data()
         if response:
             print(f"Received from Arduino: {response}")
-        
-        # Pause before next iteration
-        time.sleep(2)
 
 except KeyboardInterrupt:
     print("Exiting program.")

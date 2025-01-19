@@ -24,10 +24,10 @@ const int dirYPin = 6;
 const int servoPin = 4; // stepZPin
 
 // Declare communication variables
-float input1 = 0.0;
-float input2 = 0.0;
-const int fBufSize = 2 * sizeof(float);
-float curr_job = 0.0;
+long input1 = 0;
+long input2 = 0;
+const int fBufSize = 2 * sizeof(long);
+long curr_job = 0;
 
 // Mode: 0 if travelling, 1 if writing
 char mode;
@@ -192,10 +192,6 @@ void setup() {
 
   // Set the starting mode to travel
   travelMode();
-
-  Serial.println(sizeof(int));
-  Serial.println(sizeof(long));
-  Serial.println(sizeof(float));
 }
 
 void loop() {
@@ -215,17 +211,17 @@ void loop() {
   // delay(10000);
 
   // Wait for the next command
-  if (Serial.available() >= fBufSize) {  // Wait until at least 2 floats are available
+  if (Serial.available() >= fBufSize) {  // Wait until at least 2 longs are available
     // Read the incoming data
     byte buffer[fBufSize];
     Serial.readBytes(buffer, fBufSize);
 
-    memcpy(&input1, buffer, sizeof(float));
-    memcpy(&input2, buffer + sizeof(float), sizeof(float));
+    memcpy(&input1, buffer, sizeof(long));
+    memcpy(&input2, buffer + sizeof(long), sizeof(long));
       
     // Print the received data to Serial Monitor
-    Serial.write((byte*)&input1, sizeof(float));
-    Serial.write((byte*)&input2, sizeof(float));
+    Serial.write((byte*)&input1, sizeof(long));
+    Serial.write((byte*)&input2, sizeof(long));
     
     // Do the operations
     // If first is -, it is a command
