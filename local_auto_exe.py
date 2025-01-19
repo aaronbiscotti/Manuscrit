@@ -26,8 +26,8 @@ def main():
         print("No files in queue.")
         sys.exit(0)
 
-    # Grab the first file in the list
-    filename = files[0]
+    # Grab the last file in the list
+    filename = files[-1]
     print(f"Found G-code file in queue: {filename}")
 
     # 2) Download that file into client_backend/gcode
