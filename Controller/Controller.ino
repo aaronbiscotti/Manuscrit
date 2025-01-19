@@ -192,6 +192,10 @@ void setup() {
 
   // Set the starting mode to travel
   travelMode();
+
+  Serial.println(sizeof(int));
+  Serial.println(sizeof(long));
+  Serial.println(sizeof(float));
 }
 
 void loop() {
