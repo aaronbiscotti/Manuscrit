@@ -46,6 +46,24 @@ def process_drawing(png_path, gcode_path):
         _, binary = cv2.threshold(gray, 128, 255, cv2.THRESH_BINARY_INV)
         contours, _ = cv2.findContours(binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
+        skel = np.zeros_like(binary)
+        kernel = cv2.getStructuringElement(cv2.MORPH_CROSS, (3, 3))
+        done = False
+        while not done:
+            eroded = cv2.erode(binary, kernel)
+            temp = cv2.dilate(eroded, kernel)
+            temp = cv2.subtract(binary, temp)
+            skel = cv2.bitwise_or(skel, temp)
+            binary = eroded
+            if cv2.countNonZero(binary) == 0:
+                done = True
+
+        # Now find contours in the one‐pixel‐wide skeleton
+        skeleton_contours, _ = cv2.findContours(skel, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+
+        # Override the old contours with the new skeleton contours
+        contours = skeleton_contours
+
         with open(gcode_path, 'w') as f:
             # Start job
             f.write("G0 X0 Y0\n")  # Home position
@@ -75,6 +93,7 @@ def process_drawing(png_path, gcode_path):
         return True
     except Exception:
         return False
+
 
 def process_queue():
     while True:
